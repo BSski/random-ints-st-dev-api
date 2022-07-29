@@ -1,21 +1,54 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
-	"io"
+	"errors"
 	"net/http"
-	"reflect"
+	"os"
+	"runtime"
 	"strconv"
-	"strings"
+	"sync"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 )
 
+type randomApiRequest struct {
+	JsronRPC string          `json:"jsonrpc"`
+	Method   string          `json:"method"`
+	Params   randomApiParams `json:"params"`
+	ID       int             `json:"id"`
+}
+
+type randomApiParams struct {
+	APIKey string `json:"apiKey"`
+	N      int    `json:"n"`
+	Min    int    `json:"min"`
+	Max    int    `json:"max"`
+}
+
+type randomApiResponse struct {
+	Result *randomApiResult `json:"result"`
+	Error  *randomApiError  `json:"error"`
+	ID     int              `json:"id"`
+}
+type randomApiResult struct {
+	Random randomApiResultData `json:"random"`
+}
+
+type randomApiResultData struct {
+	Data []int `json:"data"`
+}
+
+type randomApiError struct {
+	Message string `json:"message"`
+}
+
 type FinalResult struct {
-	StdDev  []int `json:"stddev"`
-	Numbers []int `json:"numbers"`
+	Numbers [][]int `json:"numbers"`
+	StdDev  []int   `json:"stddev"`
 }
 
 type randomAPIResource struct{}
@@ -39,44 +72,89 @@ func PostCtx(next http.Handler) http.Handler {
 	})
 }
 
-// Request Handler - GET /posts/{id} - Read a single post by :id.
-func (rs randomAPIResource) Get(w http.ResponseWriter, r *http.Request) {
-	//requests := r.Context().Value("requests").(string)
-	length := r.Context().Value("length").(string)
-
-	link := fmt.Sprintf("https://www.random.org/integers/?num=%v&min=1&max=6&col=1&base=10&format=plain&rnd=new", length)
-	resp, err := http.Get(link)
-
+func requestRandomInts(intSeqLength int) (intSeq []int, err error) {
+	url := "https://api.random.org/json-rpc/2/invoke"
+	apiKey := os.Getenv("RANDOM_ORG_API_KEY")
+	params := randomApiParams{apiKey, intSeqLength, 1, 10}
+	payload := randomApiRequest{"2.0", "generateIntegers", params, 666}
+	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return intSeq, err
+	}
+	request, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(payloadJSON))
+	if err != nil {
+		return intSeq, err
+	}
+	request.Header.Set("Content-Type", "application/json")
+	//request.WithContext(ctx)
+
+	httpClient := http.Client{
+		Timeout: time.Second * 30,
+	}
+	resp, err := httpClient.Do(request)
+	if err != nil {
+		return intSeq, err
 	}
 
 	defer resp.Body.Close()
 
-	bodyBytes, err := io.ReadAll(resp.Body)
-	bodyString := string(bodyBytes)
-	bodyStr := strings.Fields(bodyString)
-
-	var nrs = []int{}
-
-	for _, i := range bodyStr {
-		j, err := strconv.Atoi(i)
-		if err != nil {
-			panic(err)
-		}
-		nrs = append(nrs, j)
+	var result randomApiResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return intSeq, err
 	}
-	fmt.Println(nrs)
 
-	fmt.Println(reflect.TypeOf(nrs[0]))
+	if err := result.Error; err != nil {
+		//http.Error(w, errors.New(result.Error.Message).Error(), http.StatusInternalServerError)
+		return intSeq, errors.New(result.Error.Message)
+	}
 
-	var result FinalResult
-	result.Numbers = nrs
-	result.StdDev = []int{33, 4, 6, 7}
+	intSeq = result.Result.Random.Data
+	return intSeq, err
+}
+
+// Request Handler - GET /posts/{id} - Read a single post by :id.
+func (rs randomAPIResource) Get(w http.ResponseWriter, r *http.Request) {
+	runtime.GOMAXPROCS(1) // Random.org API guidelines prohibit simultaneous requests.
+
+	nrOfRequestsStr := r.Context().Value("requests").(string)
+	nrOfRequests, err := strconv.Atoi(nrOfRequestsStr)
+	if err != nil {
+		panic(err)
+	}
+
+	intSeqLengthStr := r.Context().Value("length").(string)
+	intSeqLength, err := strconv.Atoi(intSeqLengthStr)
+	if err != nil {
+		panic(err)
+	}
+
+	// http.Error(w, err.Error(), http.StatusInternalServerError)
+	// http.Error(w, errors.New(result.Error.Message).Error(), http.StatusInternalServerError)
+
+	var wg sync.WaitGroup
+	wg.Add(nrOfRequests)
+	intSeqs := make([][]int, nrOfRequests)
+	for i := 0; i < nrOfRequests; i++ {
+		go func(i int) {
+			defer wg.Done()
+
+			intSeq, err := requestRandomInts(intSeqLength)
+			if err != nil {
+				return
+			}
+
+			intSeqs[i] = intSeq
+
+		}(i)
+	}
+	wg.Wait()
+
+	var finalResult FinalResult
+	finalResult.Numbers = intSeqs
+	finalResult.StdDev = []int{33, 4, 6, 7}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(result); err != nil {
+	if err := json.NewEncoder(w).Encode(finalResult); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

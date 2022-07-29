@@ -7,13 +7,18 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	port := "8080"
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
-	if fromEnv := os.Getenv("PORT"); fromEnv != "" {
-		port = fromEnv
+	port := "8080"
+	if portFromEnv := os.Getenv("PORT"); portFromEnv != "" {
+		port = portFromEnv
 	}
 
 	log.Printf("Starting up on http://localhost:%s", port)
