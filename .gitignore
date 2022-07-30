@@ -31,7 +31,9 @@ go.work
 /vendor/
 /Godeps/
 
-# End of https://www.toptal.com/developers/gitignore/api/go,dotenv
-
+# Air hot reloading files
 .air.toml
+air.exe
 tmp/
+
+# End of https://www.toptal.com/developers/gitignore/api/go,dotenv
