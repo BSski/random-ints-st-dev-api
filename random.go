@@ -17,35 +17,35 @@ import (
 	"github.com/montanaflynn/stats"
 )
 
-type randomApiRequest struct {
+type randomAPIRequest struct {
 	JsonRPC string          `json:"jsonrpc"`
 	Method  string          `json:"method"`
-	Params  randomApiParams `json:"params"`
+	Params  randomAPIParams `json:"params"`
 	ID      int             `json:"id"`
 }
 
-type randomApiParams struct {
+type randomAPIParams struct {
 	APIKey string `json:"apiKey"`
 	N      int    `json:"n"`
 	Min    int    `json:"min"`
 	Max    int    `json:"max"`
 }
 
-type randomApiResponse struct {
-	Result *randomApiResult `json:"result"`
-	Error  *randomApiError  `json:"error"`
+type randomAPIResponse struct {
+	Result *randomAPIResult `json:"result"`
+	Error  *randomAPIError  `json:"error"`
 	ID     int              `json:"id"`
 }
 
-type randomApiResult struct {
-	Random randomApiResultData `json:"random"`
+type randomAPIResult struct {
+	Random randomAPIResultData `json:"random"`
 }
 
-type randomApiResultData struct {
+type randomAPIResultData struct {
 	Data []int `json:"data"`
 }
 
-type randomApiError struct {
+type randomAPIError struct {
 	Message string `json:"message"`
 }
 
@@ -78,8 +78,8 @@ func PostCtx(next http.Handler) http.Handler {
 func requestRandomInts(intSeqLength int) (intSeq []int, err error) {
 	url := "https://api.random.org/json-rpc/2/invoke"
 	apiKey := os.Getenv("RANDOM_ORG_API_KEY")
-	params := randomApiParams{apiKey, intSeqLength, 1, 10}
-	payload := randomApiRequest{"2.0", "generateIntegers", params, 666}
+	params := randomAPIParams{apiKey, intSeqLength, 1, 10}
+	payload := randomAPIRequest{"2.0", "generateIntegers", params, 666}
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
 		return intSeq, err
@@ -101,7 +101,7 @@ func requestRandomInts(intSeqLength int) (intSeq []int, err error) {
 
 	defer resp.Body.Close()
 
-	var result randomApiResponse
+	var result randomAPIResponse
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return intSeq, err
 	}
@@ -115,6 +115,18 @@ func requestRandomInts(intSeqLength int) (intSeq []int, err error) {
 	return intSeq, err
 }
 
+func (rs randomAPIResource) validateParam(numericParam int, maxVal int) error {
+	if numericParam <= 0 {
+		return errors.New("param has to be greater than 0")
+	}
+
+	if numericParam > maxVal {
+		return fmt.Errorf("param has to be smaller than %v", maxVal)
+	}
+
+	return nil
+}
+
 // Request Handler - GET /posts/{id} - Read a single post by :id.
 func (rs randomAPIResource) Get(w http.ResponseWriter, r *http.Request) {
 	runtime.GOMAXPROCS(1) // Random.org API guidelines prohibit simultaneous requests.
@@ -122,12 +134,23 @@ func (rs randomAPIResource) Get(w http.ResponseWriter, r *http.Request) {
 	nrOfRequestsStr := r.Context().Value("requests").(string)
 	nrOfRequests, err := strconv.Atoi(nrOfRequestsStr)
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = rs.validateParam(nrOfRequests, 10)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	intSeqLengthStr := r.Context().Value("length").(string)
 	intSeqLength, err := strconv.Atoi(intSeqLengthStr)
 	if err != nil {
+		return
+	}
+	err = rs.validateParam(intSeqLength, 1000)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
