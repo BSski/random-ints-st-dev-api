@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"runtime"
@@ -13,13 +14,14 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/montanaflynn/stats"
 )
 
 type randomApiRequest struct {
-	JsronRPC string          `json:"jsonrpc"`
-	Method   string          `json:"method"`
-	Params   randomApiParams `json:"params"`
-	ID       int             `json:"id"`
+	JsonRPC string          `json:"jsonrpc"`
+	Method  string          `json:"method"`
+	Params  randomApiParams `json:"params"`
+	ID      int             `json:"id"`
 }
 
 type randomApiParams struct {
@@ -34,6 +36,7 @@ type randomApiResponse struct {
 	Error  *randomApiError  `json:"error"`
 	ID     int              `json:"id"`
 }
+
 type randomApiResult struct {
 	Random randomApiResultData `json:"random"`
 }
@@ -47,8 +50,8 @@ type randomApiError struct {
 }
 
 type FinalResult struct {
-	Numbers [][]int `json:"numbers"`
-	StdDev  []int   `json:"stddev"`
+	Numbers [][]int   `json:"numbers"`
+	StdDevs []float64 `json:"stddevs"`
 }
 
 type randomAPIResource struct{}
@@ -119,13 +122,13 @@ func (rs randomAPIResource) Get(w http.ResponseWriter, r *http.Request) {
 	nrOfRequestsStr := r.Context().Value("requests").(string)
 	nrOfRequests, err := strconv.Atoi(nrOfRequestsStr)
 	if err != nil {
-		panic(err)
+		return
 	}
 
 	intSeqLengthStr := r.Context().Value("length").(string)
 	intSeqLength, err := strconv.Atoi(intSeqLengthStr)
 	if err != nil {
-		panic(err)
+		return
 	}
 
 	// http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -134,6 +137,7 @@ func (rs randomAPIResource) Get(w http.ResponseWriter, r *http.Request) {
 	var wg sync.WaitGroup
 	wg.Add(nrOfRequests)
 	intSeqs := make([][]int, nrOfRequests)
+	stdDevsInSeqs := make([]float64, nrOfRequests)
 	for i := 0; i < nrOfRequests; i++ {
 		go func(i int) {
 			defer wg.Done()
@@ -145,13 +149,31 @@ func (rs randomAPIResource) Get(w http.ResponseWriter, r *http.Request) {
 
 			intSeqs[i] = intSeq
 
+			data := stats.LoadRawData(intSeq)
+			stdDev, _ := stats.StandardDeviation(data)
+			roundedStdDev, _ := stats.Round(stdDev, 3)
+			stdDevsInSeqs[i] = roundedStdDev
 		}(i)
 	}
 	wg.Wait()
 
+	intSeqsSums := make([]int, nrOfRequests)
+	for i, seq := range intSeqs {
+		data := stats.LoadRawData(seq)
+		seqSum, _ := stats.Sum(data)
+		intSeqsSums[i] = int(seqSum)
+	}
+	data := stats.LoadRawData(intSeqsSums)
+	stdDevOfSums, _ := stats.StandardDeviation(data)
+	roundedStdDevOfSums, _ := stats.Round(stdDevOfSums, 3)
+
+	fmt.Println("intSeqsSums:", intSeqsSums)
+	fmt.Println("stdDevsInSeqs:", stdDevsInSeqs)
+	fmt.Println("roundedStdDevOfSums:", roundedStdDevOfSums)
+
 	var finalResult FinalResult
 	finalResult.Numbers = intSeqs
-	finalResult.StdDev = []int{33, 4, 6, 7}
+	finalResult.StdDevs = stdDevsInSeqs
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(finalResult); err != nil {

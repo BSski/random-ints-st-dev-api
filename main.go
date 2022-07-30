@@ -11,9 +11,10 @@ import (
 )
 
 func main() {
+	// Needed for runs without Docker.
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal("Error loading .env file", err)
 	}
 
 	port := "8080"

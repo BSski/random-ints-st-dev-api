@@ -1,0 +1,13 @@
+# Common
+README.md
+CHANGELOG.md
+docker-compose.yml
+Dockerfile
+.dockerignore
+tmp/
+*.exe
+.air.toml
+.env
+.git
+.gitignore
+.idea
