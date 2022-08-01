@@ -1,4 +1,4 @@
-package api
+package randomintsstdev
 
 import (
 	"encoding/json"
@@ -54,11 +54,7 @@ func (rs RandomAPIResource) Get(w http.ResponseWriter, r *http.Request) {
 		stDevsInSeqs[i] = roundedStDev
 	}
 
-	intSeqsSum, err := getIntSeqsSum(intSeqs)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	intSeqsSum := getIntSeqsSum(intSeqs)
 
 	roundedStDevOfSum, err := getRoundedStDev(intSeqsSum)
 	if err != nil {

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/BSski/RandomIntsStDevAPI/api"
+	"github.com/BSski/RandomIntsStDevAPI/randomintsstdev"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
@@ -33,7 +33,7 @@ func main() {
 		w.Header().Set("Content-Type", "text/plain")
 		w.Write([]byte("Hello World!"))
 	})
-	r.Mount("/random", api.RandomAPIResource{}.Routes())
+	r.Mount("/random", randomintsstdev.RandomAPIResource{}.Routes())
 
 	log.Fatal(http.ListenAndServe(":"+port, r))
 }

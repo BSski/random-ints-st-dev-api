@@ -1,4 +1,4 @@
-package api
+package randomintsstdev
 
 import "github.com/montanaflynn/stats"
 
@@ -15,7 +15,7 @@ func getRoundedStDev(intSeq []int) (roundedStDev float64, err error) {
 	return
 }
 
-func getIntSeqsSum(intSeqs [][]int) (intSeqsSum []int, err error) {
+func getIntSeqsSum(intSeqs [][]int) (intSeqsSum []int) {
 	intSeqsSum = make([]int, len(intSeqs)*len(intSeqs[0]))
 	for i, seq := range intSeqs {
 		for j, x := range seq {
