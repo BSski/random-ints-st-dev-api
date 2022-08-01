@@ -1,4 +1,4 @@
-module github.com/go-chi/chi
+module github.com/BSski/RandomIntsStDevAPI
 
 go 1.18
 
