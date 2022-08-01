@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	// Needed for runs without Docker.
+	// Uncomment if running without Docker.
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file", err)

@@ -17,7 +17,7 @@ func TestRoundedStDev(t *testing.T) {
 	}
 	for _, test := range tests {
 		if output, _ := getRoundedStDev(test.input); output != test.expected {
-			t.Error("Test Failed: {} inputter, received: {}", test.input, test.expected, output)
+			t.Errorf("Test Failed: %v inputted, %v expected, received: %v", test.input, test.expected, output)
 		}
 	}
 }
