@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"reflect"
 	"runtime"
 	"strconv"
 	"sync"
@@ -49,10 +50,13 @@ type randomAPIError struct {
 	Message string `json:"message"`
 }
 
-type FinalResult struct {
-	Numbers       [][]int   `json:"numbers"`
-	StDevs        []float64 `json:"stdevs"`
-	StDevOfStDevs float64   `json:"stdevofstdevs"`
+type partialResult struct {
+	Stdev float64 `json:"stdev"`
+	Data  []int   `json:"data"`
+}
+
+type StDevOfSum struct {
+	StDevOfSum float64
 }
 
 type randomAPIResource struct{}
@@ -60,21 +64,12 @@ type randomAPIResource struct{}
 func (rs randomAPIResource) Routes() chi.Router {
 	r := chi.NewRouter()
 	r.Route("/mean", func(r chi.Router) {
-		r.Use(RandomAPICtx)
 		r.Get("/", rs.Get)
 	})
 	return r
 }
 
-func RandomAPICtx(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), "requests", r.URL.Query().Get("requests"))
-		ctx = context.WithValue(ctx, "length", r.URL.Query().Get("length"))
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
-
-func (rs randomAPIResource) requestRandomInts(intSeqLength int) (intSeq []int, err error) {
+func (rs randomAPIResource) requestRandomInts(ctx context.Context, intSeqLength int) (intSeq []int, err error) {
 	runtime.GOMAXPROCS(1) // Random.org API guidelines prohibit simultaneous requests.
 	url := "https://api.random.org/json-rpc/2/invoke"
 	apiKey := os.Getenv("RANDOM_ORG_API_KEY")
@@ -84,18 +79,17 @@ func (rs randomAPIResource) requestRandomInts(intSeqLength int) (intSeq []int, e
 	if err != nil {
 		return
 	}
-	request, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(payloadJSON))
+
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(payloadJSON))
 	if err != nil {
 		return
 	}
+
 	request.Header.Set("Content-Type", "application/json")
 
-	//request.WithContext(ctx)
-
 	httpClient := http.Client{
-		Timeout: time.Second * 30,
+		Timeout: 30 * time.Second,
 	}
-
 	resp, err := httpClient.Do(request)
 	if err != nil {
 		return
@@ -127,33 +121,24 @@ func (rs randomAPIResource) validateParam(paramName string, numericParam int, ma
 	return nil
 }
 
-func (rs randomAPIResource) getRandomAPIData(nrOfRequests int, intSeqLength int) (intSeqs [][]int, stDevsInSeqs []float64, err error) {
+func (rs randomAPIResource) getRandomAPIData(ctx context.Context, nrOfRequests int, intSeqLength int) (intSeqs [][]int, err error) {
 	var wg sync.WaitGroup
 	wg.Add(nrOfRequests)
 
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	intSeqs = make([][]int, nrOfRequests)
-	stDevsInSeqs = make([]float64, nrOfRequests)
 	for i := 0; i < nrOfRequests; i++ {
-		go func(i int) {
+		go func(ctx context.Context, i int) {
 			defer wg.Done()
 
-			intSeq, err := rs.requestRandomInts(intSeqLength)
+			intSeq, err := rs.requestRandomInts(ctx, intSeqLength)
 			if err != nil {
+				cancel()
 				return
 			}
 			intSeqs[i] = intSeq
-
-			data := stats.LoadRawData(intSeq)
-			stDev, err := stats.StandardDeviation(data)
-			if err != nil {
-				return
-			}
-			roundedStDev, err := stats.Round(stDev, 3)
-			if err != nil {
-				return
-			}
-			stDevsInSeqs[i] = roundedStDev
-		}(i)
+		}(ctx, i)
 	}
 	wg.Wait()
 	return
@@ -174,13 +159,13 @@ func (rs randomAPIResource) prepareURLParam(paramStr, paramURLName string, maxVa
 	return
 }
 
-func (rs randomAPIResource) getStDevOfStDevs(nrOfRequests int, intSeqs [][]int) (roundedStDevOfStDevs float64, err error) {
-	intSeqsSums := make([]int, nrOfRequests)
+func (rs randomAPIResource) getStDevOfSum(intSeqs [][]int) (roundedStDevOfSum float64, err error) {
+	intSeqsSums := make([]int, len(intSeqs))
 	for i, seq := range intSeqs {
 		data := stats.LoadRawData(seq)
 		seqSum, err := stats.Sum(data)
 		if err != nil {
-			return roundedStDevOfStDevs, err
+			return roundedStDevOfSum, err
 		}
 		intSeqsSums[i] = int(seqSum)
 	}
@@ -189,44 +174,76 @@ func (rs randomAPIResource) getStDevOfStDevs(nrOfRequests int, intSeqs [][]int) 
 	if err != nil {
 		return
 	}
-	roundedStDevOfStDevs, err = stats.Round(stDevOfSums, 3)
+	roundedStDevOfSum, err = stats.Round(stDevOfSums, 3)
 	if err != nil {
 		return
 	}
 	return
 }
 
+func (rs randomAPIResource) getStDevs(intSeqs [][]int) (stDevsInSeqs []float64, err error) {
+	stDevsInSeqs = make([]float64, len(intSeqs))
+	for i, intSeq := range intSeqs {
+		data := stats.LoadRawData(intSeq)
+		stDev, err := stats.StandardDeviation(data)
+		if err != nil {
+			return stDevsInSeqs, err
+		}
+		roundedStDev, err := stats.Round(stDev, 3)
+		if err != nil {
+			return stDevsInSeqs, err
+		}
+		stDevsInSeqs[i] = roundedStDev
+	}
+	return
+}
+
 // Request Handler - GET /posts/{id} - Read a single post by :id.
 func (rs randomAPIResource) Get(w http.ResponseWriter, r *http.Request) {
-	nrOfRequestsStr := r.Context().Value("requests").(string)
+	nrOfRequestsStr := r.URL.Query().Get("requests")
+	fmt.Println("type:", reflect.TypeOf(nrOfRequestsStr))
 	nrOfRequests, err := rs.prepareURLParam(nrOfRequestsStr, "requests", 10)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	intSeqLengthStr := r.Context().Value("length").(string)
+	intSeqLengthStr := r.URL.Query().Get("length")
 	intSeqLength, err := rs.prepareURLParam(intSeqLengthStr, "length", 1000)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	intSeqs, stDevsInSeqs, err := rs.getRandomAPIData(nrOfRequests, intSeqLength)
+	intSeqs, err := rs.getRandomAPIData(r.Context(), nrOfRequests, intSeqLength)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	roundedStDevOfStDevs, err := rs.getStDevOfStDevs(nrOfRequests, intSeqs)
+	stDevsInSeqs, err := rs.getStDevs(intSeqs)
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	var finalResult FinalResult
-	finalResult.Numbers = intSeqs
-	finalResult.StDevs = stDevsInSeqs
-	finalResult.StDevOfStDevs = roundedStDevOfStDevs
+	roundedStDevOfSum, err := rs.getStDevOfSum(intSeqs)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	finalResult := make([]partialResult, nrOfRequests+1)
+	for i := 0; i < nrOfRequests; i++ {
+		finalResult[i] = partialResult{
+			Stdev: stDevsInSeqs[i],
+			Data:  intSeqs[i],
+		}
+	}
+	finalResult[nrOfRequests] = partialResult{
+		Stdev: roundedStDevOfSum,
+		Data:  intSeqs[0],
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(finalResult); err != nil {
