@@ -32,8 +32,8 @@ func main() {
 		w.Header().Set("Content-Type", "text/plain")
 		w.Write([]byte("Hello World!"))
 	})
-
-	r.Mount("/random", randomAPIResource{}.Routes())
+	rs := randomAPI.randomAPIResource{}
+	r.Mount("/random", rs.randomAPI.Routes())
 
 	log.Fatal(http.ListenAndServe(":"+port, r))
 }
