@@ -84,8 +84,7 @@ PORT=8080
 
 ## :arrow_up: Room for improvement
 
-- more and better tests,
-- CORS middleware.
+- more tests.
 
 
 ## :construction_worker: Author
