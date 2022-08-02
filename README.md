@@ -3,6 +3,15 @@
 </p>
 
 
+<div markdown="1" align="center">
+
+[![Build Status](https://bsski.semaphoreci.com/badges/RandomIntsStDevAPI/branches/main.svg?style=shields&key=b033d465-f52b-4169-8a0c-025b0586f456)](https://random-ints-st-dev-api.herokuapp.com/random/mean?requests=2&length=3)
+[![Demo Uptime](https://img.shields.io/uptimerobot/ratio/7/m792386113-957fa47111c7ccefd3d8617e)](https://random-ints-st-dev-api.herokuapp.com/random/mean?requests=2&length=3)
+[![Heroku](https://pyheroku-badge.herokuapp.com/?app=django-music-bsski&style=flat)](https://random-ints-st-dev-api.herokuapp.com/random/mean?requests=2&length=3)
+
+</div>
+
+
 <div markdown="1" align="center">    
 
 ![Demo Screenshot](https://i.imgur.com/OgMTzZX.png)
@@ -29,7 +38,7 @@
 
 
 ## :scroll: Project description
-This is a recruitment task for a Junior Software Developer position in Go.
+This is a recruitment task for a Junior Software Developer position.
 
 The project is a REST service supporting the following GET operation:
 
@@ -39,7 +48,7 @@ which performs `{r}` concurrent requests to random.org API asking for `{l}` numb
 
 Additionally, the application calculates standard deviation of each drawn integers set and of the sum of all sets.
 
-The application also has a Semaphore CI/CD pipeline with deployment to Heroku via Docker container:
+The project also has a Semaphore CI/CD pipeline with deployment to Heroku via Docker container:
 ![CI/CD screenshot](https://i.imgur.com/5v0Xufr.png)
 
 
@@ -60,7 +69,7 @@ The application also has a Semaphore CI/CD pipeline with deployment to Heroku vi
 
 2. Run `docker run --env-file .env -p 8080:8080 bsski/random-ints-st-dev-api:latest` in the `.env` file directory.
 
-3. Access `localhost:8080`. 
+3. Access `localhost:8080/random/mean?requests=2&length=3`. 
 
 
 ## :closed_lock_with_key: Environment variables
