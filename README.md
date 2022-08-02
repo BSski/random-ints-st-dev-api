@@ -23,7 +23,9 @@
 This is a recruitment task for a Junior Software Developer position in Go.
 
 The project is a REST service supporting the following GET operation:
+
 ```/random/mean?requests={r}&length={l}```
+
 which performs `{r}` concurrent requests to random.org API asking for `{l}` number of random integers.
 
 Additionally, the application calculates standard deviation of each drawn integers set and of the sum of all sets.
