@@ -8,10 +8,12 @@ blocks:
   - name: Testing
     task:
       jobs:
-        - name: 'Job #1'
+        - name: Tests
           commands:
-            - ls -la
             - go test ./... -v
+        - name: Style check
+          commands:
+            - gofmt main.go | diff --ignore-tab-expansion main.go -
       prologue:
         commands:
           - checkout
