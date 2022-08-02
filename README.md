@@ -89,7 +89,7 @@ PORT=8080
 
 ## :arrow_up: Room for improvement
 
-- more tests.
+- more tests
 
 
 ## :construction_worker: Author
