@@ -7,11 +7,10 @@ import (
 	"errors"
 	"net/http"
 	"os"
-	"runtime"
-	"sync"
 	"time"
 
 	"github.com/BSski/RandomIntsStDevAPI/constants"
+	"golang.org/x/sync/errgroup"
 )
 
 type randomAPIRequest struct {
@@ -47,42 +46,34 @@ type randomAPIError struct {
 }
 
 func getRandomIntSeqs(ctx context.Context, nrOfRequests int, intSeqLength int) (intSeqs [][]int, err error) {
-	var wg sync.WaitGroup
-	wg.Add(nrOfRequests)
-
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	previousGOMAXPROCS := runtime.GOMAXPROCS(1) // Random.org guidelines prohibit simultaneous requests.
-
+	eg, ctx := errgroup.WithContext(ctx)
 	intSeqs = make([][]int, nrOfRequests)
 	for i := 0; i < nrOfRequests; i++ {
-		go func(ctx context.Context, i int) {
-			defer wg.Done()
+		i := i
+		eg.Go(func() error {
 			intSeq, err := requestRandomIntSeq(ctx, intSeqLength)
 			if err != nil {
-				cancel()
-				return
+				return err
 			}
 			intSeqs[i] = intSeq
-		}(ctx, i)
+			return nil
+		})
 	}
-	wg.Wait()
-
-	runtime.GOMAXPROCS(previousGOMAXPROCS)
-	return
+	if err := eg.Wait(); err != nil {
+		return nil, err
+	}
+	return intSeqs, nil
 }
 
 func requestRandomIntSeq(ctx context.Context, intSeqLength int) (intSeq []int, err error) {
-	url := constants.RANDOM_API_URL
 	apiKey := os.Getenv("RANDOM_ORG_API_KEY")
-
 	params := randomAPIParams{apiKey, intSeqLength, constants.MIN_RANDOM_INT, constants.MAX_RANDOM_INT}
 	payload := randomAPIRequest{"2.0", "generateIntegers", params, intSeqLength}
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
 		return
 	}
+	url := constants.RANDOM_API_URL
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(payloadJSON))
 	if err != nil {
 		return

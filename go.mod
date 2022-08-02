@@ -8,4 +8,5 @@ require (
 	github.com/google/go-cmp v0.5.8
 	github.com/joho/godotenv v1.4.0
 	github.com/montanaflynn/stats v0.6.6
+	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
 )
