@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	// Uncomment if running without Docker.
+	// Get "github.com/joho/godotenv" and uncomment this code if you want to run the app without Docker.
 	// err := godotenv.Load()
 	// if err != nil {
 	// 	log.Fatal("Error loading .env file", err)

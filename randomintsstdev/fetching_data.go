@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"runtime"
 	"time"
 
 	"github.com/BSski/RandomIntsStDevAPI/constants"
@@ -47,6 +48,9 @@ type randomAPIError struct {
 
 func getRandomIntSeqs(ctx context.Context, nrOfRequests int, intSeqLength int) (intSeqs [][]int, err error) {
 	eg, ctx := errgroup.WithContext(ctx)
+
+	previousGOMAXPROCS := runtime.GOMAXPROCS(1) // Random.org guidelines prohibit simultaneous requests.
+
 	intSeqs = make([][]int, nrOfRequests)
 	for i := 0; i < nrOfRequests; i++ {
 		i := i
@@ -59,6 +63,9 @@ func getRandomIntSeqs(ctx context.Context, nrOfRequests int, intSeqLength int) (
 			return nil
 		})
 	}
+
+	runtime.GOMAXPROCS(previousGOMAXPROCS)
+
 	if err := eg.Wait(); err != nil {
 		return nil, err
 	}
@@ -81,7 +88,7 @@ func requestRandomIntSeq(ctx context.Context, intSeqLength int) (intSeq []int, e
 	request.Header.Set("Content-Type", "application/json")
 
 	httpClient := http.Client{
-		Timeout: 30 * time.Second,
+		Timeout: constants.RANDOM_ORG_REQUEST_TIMEOUT * time.Second,
 	}
 	resp, err := httpClient.Do(request)
 	if err != nil {

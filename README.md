@@ -52,6 +52,7 @@ Additionally, the application calculates standard deviation of each drawn intege
 The project also has a Semaphore CI/CD pipeline with deployment to Heroku via Docker container:
 ![CI/CD screenshot](https://i.imgur.com/5v0Xufr.png)
 
+I decided to use `runtime.GOMAXPROCS(1)`, since random.org guidelines (https://www.random.org/clients/) prohibit sending simultaneous requests by automated clients. In accordance with the guidelines the timeout is set to 180 seconds.
 
 
 ## :hammer: Technologies used
