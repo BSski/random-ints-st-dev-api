@@ -39,6 +39,7 @@ The application is also dockerized.
 - google/go-cmp 0.5.8
 - joho/godotenv 1.4.0
 - montanaflynn/stats 0.6.6
+- cosmtrek/air 1.40.4
 - Docker
 
 

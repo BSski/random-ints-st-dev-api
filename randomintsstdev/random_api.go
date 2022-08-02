@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/BSski/RandomIntsStDevAPI/constants"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -26,13 +27,13 @@ func (rs RandomAPIResource) Routes() chi.Router {
 
 func (rs RandomAPIResource) Get(w http.ResponseWriter, r *http.Request) {
 	nrOfRequestsStr := r.URL.Query().Get("requests")
-	nrOfRequests, err := prepareURLParam(nrOfRequestsStr, "requests", 10)
+	nrOfRequests, err := prepareURLParam(nrOfRequestsStr, "requests", constants.MAX_CONCURRENT_REQUESTS)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	intSeqLengthStr := r.URL.Query().Get("length")
-	intSeqLength, err := prepareURLParam(intSeqLengthStr, "length", 1000)
+	intSeqLength, err := prepareURLParam(intSeqLengthStr, "length", constants.MAX_SEQUENCE_LENGTH)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
