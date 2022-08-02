@@ -12,7 +12,7 @@ blocks:
           commands:
             - cd RandomIntsStDevAPI
             - ls -la
-            - go test ./...
+            - go test ./... -v
       prologue:
         commands:
           - sem-version go 1.18
