@@ -1,6 +1,8 @@
 <p align="center">
-  <h2 align="center">Random Integers' Standard Deviation API</h2>
+  <h1 align="center">Random Integers' Standard Deviation API</h2>
 </p>
+
+![Demo Screenshot](https://i.imgur.com/OgMTzZX.png)
 
 
 ## Table of contents
