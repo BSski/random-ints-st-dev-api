@@ -1,5 +1,5 @@
 version: v1.0
-name: Initial Pipeline
+name: Go
 agent:
   machine:
     type: e1-standard-2
@@ -8,11 +8,18 @@ blocks:
   - name: Testing
     task:
       jobs:
-        - name: 'Job #1'
+        - name: Tests
           commands:
-            - cd RandomIntsStDevAPI
-            - ls -la
-            - go test ./...
+            - go test ./... -v
+        - name: Style check
+          commands:
+            - gofmt main.go | diff --ignore-tab-expansion main.go -
       prologue:
         commands:
+          - checkout
           - sem-version go 1.18
+promotions:
+  - name: Dockerize
+    pipeline_file: pipeline_2.yml
+    auto_promote:
+      when: branch = 'main' AND result = 'passed'
