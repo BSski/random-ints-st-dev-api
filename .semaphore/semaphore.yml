@@ -10,7 +10,8 @@ blocks:
       jobs:
         - name: 'Job #1'
           commands:
-            - ls -l
+            - cd constants
+            - ls -la
             - go test ./...
       prologue:
         commands:
