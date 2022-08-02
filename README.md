@@ -53,9 +53,11 @@ The project also has a Semaphore CI/CD pipeline with deployment to Heroku via Do
 ![CI/CD screenshot](https://i.imgur.com/5v0Xufr.png)
 
 I decided to use `runtime.GOMAXPROCS(1)`, since random.org guidelines (https://www.random.org/clients/) prohibit sending simultaneous requests by automated clients. In accordance with the guidelines the timeout is set to 180 seconds.
+If you want to run the application, you have to supply your own api key and your email address in the .env file (the guidelines require API client's email supplied in the "User-Agent" header.).
 
 
 ## :hammer: Technologies used
+- random.org API
 - Go 1.18
 - go-chi/chi/v5 5.0.7
 - google/go-cmp 0.5.8
@@ -79,6 +81,7 @@ I decided to use `runtime.GOMAXPROCS(1)`, since random.org guidelines (https://w
 To run this project, you have to set up the following environment variables in the `.env` file (**the values below are exemplary**):
 ```
 RANDOM_ORG_API_KEY=af83r3m2-mv82-z327-12m9238hjqdn
+CLIENT_EMAIL=testOwner@gmail.com
 PORT=8080
 ```
 

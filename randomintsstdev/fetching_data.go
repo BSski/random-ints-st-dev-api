@@ -86,6 +86,7 @@ func requestRandomIntSeq(ctx context.Context, intSeqLength int) (intSeq []int, e
 		return
 	}
 	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("User-Agent", os.Getenv("CLIENT_EMAIL"))
 
 	httpClient := http.Client{
 		Timeout: constants.RANDOM_ORG_REQUEST_TIMEOUT * time.Second,

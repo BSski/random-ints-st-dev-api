@@ -30,7 +30,7 @@ func main() {
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain")
-		w.Write([]byte("Hello World! You're probably looking for `/random/mean?requests=2&length=2` endpoint."))
+		w.Write([]byte("Hello World! You're probably looking for '/random/mean?requests=2&length=2' endpoint."))
 	})
 	r.Mount("/random", randomintsstdev.RandomAPIResource{}.Routes())
 
