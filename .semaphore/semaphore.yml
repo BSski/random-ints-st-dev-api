@@ -10,9 +10,9 @@ blocks:
       jobs:
         - name: 'Job #1'
           commands:
-            - cd RandomIntsStDevAPI
             - ls -la
             - go test ./... -v
       prologue:
         commands:
+          - checkout
           - sem-version go 1.18
