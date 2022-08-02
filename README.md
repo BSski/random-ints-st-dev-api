@@ -46,7 +46,7 @@ The application is also dockerized.
 
 1. Create an `.env` file basing on `.env_sample_file` from the repository. Set `PORT` to 8080.
 
-2. Run `docker run --env-file .env -p 8080:8080 bsski/images-api:latest` in the `.env` file directory.
+2. Run `docker run --env-file .env -p 8080:8080 bsski/random-ints-st-dev-api:latest` in the `.env` file directory.
 
 3. Access `localhost:8080`. 
 
