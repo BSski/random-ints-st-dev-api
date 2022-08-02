@@ -53,9 +53,10 @@ The application is also dockerized.
 
 ## :closed_lock_with_key: Environment variables
 
-To run this project, you have to set up the following environment variable in the `.env` file (**the value below are exemplary**):
+To run this project, you have to set up the following environment variables in the `.env` file (**the values below are exemplary**):
 ```
 RANDOM_ORG_API_KEY=af83r3m2-mv82-z327-12m9238hjqdn
+PORT=8080
 ```
 
 
