@@ -68,7 +68,7 @@ I decided to use `runtime.GOMAXPROCS(1)`, since random.org guidelines (https://w
 
 ## :hammer_and_wrench: Deployment
 
-If you want to run the application, you have to supply your own API key and your email address (the guidelines require API client's email supplied in the "User-Agent" header) in the .env file .
+If you want to run the application, you have to supply your own API key and your email address (the guidelines require random.org API client's email supplied in the "User-Agent" header) in the .env file .
 
 1. Create an `.env` file basing on `.env_sample_file` from the repository. Set `PORT` to 8080.
 
