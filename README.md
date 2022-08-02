@@ -2,7 +2,12 @@
   <h1 align="center">Random Integers' Standard Deviation API</h2>
 </p>
 
+
+<div markdown="1" align="center">    
+
 ![Demo Screenshot](https://i.imgur.com/OgMTzZX.png)
+
+</div>
 
 
 ## Table of contents
