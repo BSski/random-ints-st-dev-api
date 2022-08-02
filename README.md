@@ -10,6 +10,15 @@
 </div>
 
 
+<h3 align="center">
+  :fireworks: Live demo :fireworks:
+</h3>
+
+<p align="center">
+  https://random-ints-st-dev-api.herokuapp.com/random/mean?requests=2&length=3
+</p>
+
+
 ## Table of contents
 * [Project description](#scroll-project-description)
 * [Technologies used](#hammer-technologies-used)
@@ -30,7 +39,9 @@ which performs `{r}` concurrent requests to random.org API asking for `{l}` numb
 
 Additionally, the application calculates standard deviation of each drawn integers set and of the sum of all sets.
 
-The application is also dockerized.
+The application also has a Semaphore CI/CD pipeline with deployment to Heroku via Docker container:
+![CI/CD screenshot](https://i.imgur.com/5v0Xufr.png)
+
 
 
 ## :hammer: Technologies used
