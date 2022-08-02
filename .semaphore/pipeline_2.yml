@@ -10,16 +10,13 @@ blocks:
       jobs:
         - name: Build
           commands:
-            - ls -la
+            - checkout
             - 'echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin'
             - 'docker pull $DOCKER_USERNAME/random-ints-st-dev-api:latest || true'
             - 'docker build --cache-from=$DOCKER_USERNAME/random-ints-st-dev-api:latest -t $DOCKER_USERNAME/random-ints-st-dev-api:latest .'
-            - 'docker push $DOCKER_USERNAME/random-ints-st-dev-api:'
+            - 'docker push $DOCKER_USERNAME/random-ints-st-dev-api:latest'
       secrets:
         - name: dockerhub
-      prologue:
-        commands:
-          - checkout
 promotions:
   - name: Deploy
     pipeline_file: pipeline_3.yml
