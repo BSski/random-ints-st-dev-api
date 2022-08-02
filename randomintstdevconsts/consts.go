@@ -1,4 +1,4 @@
-package constants
+package randomintstdevconsts
 
 const (
 	RANDOM_API_URL             = "https://api.random.org/json-rpc/2/invoke"

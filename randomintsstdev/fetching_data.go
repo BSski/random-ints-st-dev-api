@@ -10,7 +10,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/BSski/RandomIntsStDevAPI/constants"
+	"github.com/BSski/RandomIntsStDevAPI/randomintstdevconsts"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -74,13 +74,13 @@ func getRandomIntSeqs(ctx context.Context, nrOfRequests int, intSeqLength int) (
 
 func requestRandomIntSeq(ctx context.Context, intSeqLength int) (intSeq []int, err error) {
 	apiKey := os.Getenv("RANDOM_ORG_API_KEY")
-	params := randomAPIParams{apiKey, intSeqLength, constants.MIN_RANDOM_INT, constants.MAX_RANDOM_INT}
+	params := randomAPIParams{apiKey, intSeqLength, randomintstdevconsts.MIN_RANDOM_INT, randomintstdevconsts.MAX_RANDOM_INT}
 	payload := randomAPIRequest{"2.0", "generateIntegers", params, intSeqLength}
 	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
 		return
 	}
-	url := constants.RANDOM_API_URL
+	url := randomintstdevconsts.RANDOM_API_URL
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(payloadJSON))
 	if err != nil {
 		return
@@ -89,7 +89,7 @@ func requestRandomIntSeq(ctx context.Context, intSeqLength int) (intSeq []int, e
 	request.Header.Set("User-Agent", os.Getenv("CLIENT_EMAIL"))
 
 	httpClient := http.Client{
-		Timeout: constants.RANDOM_ORG_REQUEST_TIMEOUT * time.Second,
+		Timeout: randomintstdevconsts.RANDOM_ORG_REQUEST_TIMEOUT * time.Second,
 	}
 	resp, err := httpClient.Do(request)
 	if err != nil {
