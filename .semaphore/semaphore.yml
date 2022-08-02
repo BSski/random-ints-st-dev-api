@@ -10,7 +10,7 @@ blocks:
       jobs:
         - name: 'Job #1'
           commands:
-            - cd constants
+            - cd RandomIntsStDevAPI
             - ls -la
             - go test ./...
       prologue:
