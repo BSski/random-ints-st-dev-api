@@ -17,6 +17,9 @@ blocks:
             - 'docker push $DOCKER_USERNAME/random-ints-st-dev-api:'
       secrets:
         - name: dockerhub
+      prologue:
+        commands:
+          - checkout
 promotions:
   - name: Deploy
     pipeline_file: pipeline_3.yml
