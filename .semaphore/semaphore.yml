@@ -10,5 +10,6 @@ blocks:
       jobs:
         - name: 'Job #1'
           commands:
+            - ls -la
             - go mod tidy
             - go test ./...
