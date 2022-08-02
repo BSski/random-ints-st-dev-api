@@ -53,7 +53,6 @@ The project also has a Semaphore CI/CD pipeline with deployment to Heroku via Do
 ![CI/CD screenshot](https://i.imgur.com/5v0Xufr.png)
 
 I decided to use `runtime.GOMAXPROCS(1)`, since random.org guidelines (https://www.random.org/clients/) prohibit sending simultaneous requests by automated clients. In accordance with the guidelines the timeout is set to 180 seconds.
-If you want to run the application, you have to supply your own api key and your email address in the .env file (the guidelines require API client's email supplied in the "User-Agent" header.).
 
 
 ## :hammer: Technologies used
@@ -68,6 +67,8 @@ If you want to run the application, you have to supply your own api key and your
 
 
 ## :hammer_and_wrench: Deployment
+
+If you want to run the application, you have to supply your own API key and your email address (the guidelines require API client's email supplied in the "User-Agent" header) in the .env file .
 
 1. Create an `.env` file basing on `.env_sample_file` from the repository. Set `PORT` to 8080.
 
