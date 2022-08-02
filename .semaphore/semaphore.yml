@@ -10,7 +10,7 @@ blocks:
       jobs:
         - name: 'Job #1'
           commands:
-            - dir
+            - ls -l
             - go test ./...
       prologue:
         commands:
