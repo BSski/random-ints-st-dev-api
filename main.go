@@ -8,15 +8,14 @@ import (
 	"github.com/BSski/RandomIntsStDevAPI/randomintsstdev"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/joho/godotenv"
 )
 
 func main() {
 	// Uncomment if running without Docker.
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file", err)
-	}
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	log.Fatal("Error loading .env file", err)
+	// }
 
 	port := "8080"
 	if portFromEnv := os.Getenv("PORT"); portFromEnv != "" {
