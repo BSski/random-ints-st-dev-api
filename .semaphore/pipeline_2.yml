@@ -1,5 +1,5 @@
 version: v1.0
-name: Pipeline 2
+name: Docker
 agent:
   machine:
     type: e1-standard-2
@@ -10,6 +10,7 @@ blocks:
       jobs:
         - name: Build
           commands:
+            - ls -la
             - 'echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin'
             - 'docker pull $DOCKER_USERNAME/random-ints-st-dev-api:latest || true'
             - 'docker build --cache-from=$DOCKER_USERNAME/random-ints-st-dev-api:latest -t $DOCKER_USERNAME/random-ints-st-dev-api:latest .'
