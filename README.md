@@ -9,8 +9,7 @@
 <!-- [![Demo Uptime](https://img.shields.io/uptimerobot/ratio/7/m792386113-957fa47111c7ccefd3d8617e)](https://random-ints-st-dev-api.herokuapp.com/random/mean?requests=2&length=2) -->
 <!-- [![Heroku](https://pyheroku-badge.herokuapp.com/?app=django-music-bsski&style=flat)](https://random-ints-st-dev-api.herokuapp.com/random/mean?requests=2&length=3) -->
 [![Maintainability](https://api.codeclimate.com/v1/badges/9fd1a96061671d7f7766/maintainability)](https://codeclimate.com/github/BSski/RandomIntsStDevAPI/maintainability)
-[![CodeFactor](https://www.codefactor.io/repository/github/bsski/randomintsstdevapi/badge)](https://www.codefactor.io/repository/github/bsski/randomintsstdevapi)
-</div>
+[![CodeFactor](https://www.codefactor.io/repository/github/bsski/random-ints-st-dev-api/badge)](https://www.codefactor.io/repository/github/bsski/random-ints-st-dev-api)
 
 
 <div markdown="1" align="center">    
