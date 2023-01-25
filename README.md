@@ -27,10 +27,11 @@
   <b>[Heroku retracted its free tier, therefore all my demos are unavailable until further notice.]</b>
 </p>
 
+<!--
 <p align="center">
   https://random-ints-st-dev-api.herokuapp.com/random/mean?requests=2&length=3
 </p>
-
+-->
 
 ## Table of contents
 * [Project description](#scroll-project-description)
