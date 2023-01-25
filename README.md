@@ -34,8 +34,6 @@
 -->
 
 <p align="left">
-   
-</p>
 
 ## Table of contents
 * [Project description](#scroll-project-description)
@@ -103,3 +101,5 @@ PORT=8080
 ## :construction_worker: Author
 
 - [@BSski](https://www.github.com/BSski)
+
+</p>
