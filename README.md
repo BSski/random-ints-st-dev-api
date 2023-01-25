@@ -33,7 +33,7 @@
 </p>
 -->
 
-<p align="left">
+<div align="left">
 
 ## Table of contents
 * [Project description](#scroll-project-description)
@@ -102,4 +102,4 @@ PORT=8080
 
 - [@BSski](https://www.github.com/BSski)
 
-</p>
+</div>
